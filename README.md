@@ -42,3 +42,20 @@ An Application Load Balancer in the public subnets forwards HTTP traffic to EC2 
 **Auto Scaling group with 2 instances in service:**
 ![Auto Scaling group](docs/12-asg.png)
 
+## 5. Automated backups (Lambda, EventBridge, SNS)
+A Python Lambda function creates a weekly RDS snapshot, keeps only the latest few (older ones are deleted to control storage cost), and sends an email through SNS. If the database is not in the `available` state, the function sends a "FAILED" email instead of failing silently. EventBridge Scheduler triggers it on a cron schedule. The function runs outside the VPC because it only calls AWS APIs, so it needs no NAT gateway. Its IAM role is least privilege: it can snapshot only this database and publish only to this topic. The code is in [`lambda/snapshot.py`](lambda/snapshot.py), and the database ID, topic ARN, and retention count come from environment variables, so there are no hardcoded values.
+
+**Least-privilege IAM role for the function:**
+![Lambda role](docs/13-lambda-role.png)
+
+**Successful test run:**
+![Lambda test](docs/14a-lambda-test-success.png)
+
+**Snapshot created in RDS (manual snapshots):**
+![RDS snapshot](docs/14b-rds-manual-snapshot.png)
+
+**Email notification from SNS:**
+![SNS email](docs/15-sns-email.png)
+
+**Weekly schedule in EventBridge:**
+![EventBridge schedule](docs/16-eventbridge-schedule.png)
