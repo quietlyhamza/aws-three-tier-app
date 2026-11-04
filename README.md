@@ -23,3 +23,22 @@ Private RDS instance, reachable only from the app security group. Credentials ar
 
 ![RDS](docs/06-rds.png)
 ![RDS connection test](docs/07-rds-connect.png)
+
+## 4. Load balancing and Auto Scaling
+An Application Load Balancer in the public subnets forwards HTTP traffic to EC2 instances in the private app subnets. An Auto Scaling group keeps 2 instances running across two Availability Zones (min 2, max 3), scales on 50% average CPU, and replaces instances that fail the `/health` check.
+
+**Target group: both targets healthy, one in each AZ:**
+![Target group healthy](docs/08-target-group-healthy.png)
+
+**ALB resource map (listener, target group, targets):**
+![ALB resource map](docs/09-alb-resource-map.png)
+
+**Request served through the ALB by a private instance:**
+![ALB in browser](docs/10-alb-browser.png)
+
+**Traffic distributed across both instances:**
+![Load balancing](docs/11-alb-loadbalancing.png)
+
+**Auto Scaling group with 2 instances in service:**
+![Auto Scaling group](docs/12-asg.png)
+
